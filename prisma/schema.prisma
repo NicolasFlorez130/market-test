@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+   provider        = "prisma-client-js"
+   previewFeatures = ["referentialIntegrity"]
+}
+
+datasource db {
+   provider     = "mysql"
+   url          = env("DATABASE_URL")
+   relationMode = "prisma"
+}
+
+//
+
+model VehicleType {
+   id     Int     @id @default(autoincrement())
+   name   String  @unique
+   bodies Body[]
+   brands Brand[]
+}
+
+model Body {
+   id            Int          @id @default(autoincrement())
+   name          String       @unique
+   VehicleType   VehicleType? @relation(fields: [vehicleTypeId], references: [id])
+   vehicleTypeId Int?
+}
+
+model Brand {
+   id            Int            @id @default(autoincrement())
+   name          String         @unique
+   vehicleModels VehicleModel[]
+   VehicleType   VehicleType?   @relation(fields: [vehicleTypeId], references: [id])
+   vehicleTypeId Int?
+}
+
+model CilinderCapacity {
+   id             Int           @id @default(autoincrement())
+   name           String        @unique
+   VehicleModel   VehicleModel? @relation(fields: [vehicleModelId], references: [id])
+   vehicleModelId Int?
+}
+
+model Transmision {
+   id            Int            @id @default(autoincrement())
+   name          String         @unique
+   vehicleModels VehicleModel[]
+}
+
+model TractionType {
+   id            Int            @id @default(autoincrement())
+   name          String         @unique
+   vehicleModels VehicleModel[]
+}
+
+model FuelType {
+   id            Int            @id @default(autoincrement())
+   name          String         @unique
+   vehicleModels VehicleModel[]
+}
+
+model VehicleModel {
+   id                 Int                @id @default(autoincrement())
+   name               String             @unique
+   cilinderCapacities CilinderCapacity[]
+   FuelType           FuelType?          @relation(fields: [fuelTypeId], references: [id])
+   fuelTypeId         Int?
+   TractionType       TractionType?      @relation(fields: [tractionTypeId], references: [id])
+   tractionTypeId     Int?
+   Transmision        Transmision?       @relation(fields: [transmisionId], references: [id])
+   transmisionId      Int?
+   Brand              Brand?             @relation(fields: [brandId], references: [id])
+   brandId            Int?
+}
