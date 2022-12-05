@@ -1,3 +1,6 @@
+import styled from "styled-components";
+import { Themes } from "../pages/StyleVariables";
+
 interface Props {
   onclick: () => void;
   disabled?: boolean;
@@ -6,14 +9,27 @@ interface Props {
 
 const Button = ({ onclick, disabled, children }: Props) => {
   return (
-    <button
-      onClick={onclick}
-      disabled={disabled}
-      className="m-2 mt-0 rounded-full bg-main px-8 py-2 text-white transition-all disabled:border disabled:border-gray-400 disabled:bg-lightMain disabled:text-gray-400"
-    >
+    <Container onClick={onclick} disabled={disabled}>
       {children}
-    </button>
+    </Container>
   );
 };
 
 export default Button;
+
+const Container = styled.button`
+  background-color: ${Themes.main};
+  border-radius: 999px;
+  color: white;
+  margin: 0.5rem;
+  margin-top: 0;
+  padding: 0.5rem 2rem;
+  transition: 0.2s;
+  height: min-content;
+
+  &:disabled {
+    border: 1px rgb(156 163 175) solid;
+    background-color: ${Themes.lightMain};
+    color: rgb(156 163 175);
+  }
+`;

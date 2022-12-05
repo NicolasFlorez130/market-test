@@ -324,10 +324,10 @@ const Filter = () => {
         <div className="button-container flex w-full justify-end">
           <Button
             onclick={() => setView(state.Select)}
-            disabled={
-              localStorage.getItem(key) === "[]" ||
-              localStorage.getItem(key) === null
-            }
+            // disabled={
+            //   localStorage.getItem(key) === "[]" ||
+            //   localStorage.getItem(key) === null
+            // }
           >
             Cancelar
           </Button>

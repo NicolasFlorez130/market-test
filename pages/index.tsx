@@ -11,6 +11,7 @@ import {
 } from "@prisma/client";
 import { GetServerSideProps, InferGetServerSidePropsType } from "next";
 import { useState } from "react";
+import styled from "styled-components";
 import ChangeUser from "../components/ChangeUser";
 import Header from "../components/Header";
 import { UserContext } from "./context/UserSlice";
@@ -32,19 +33,19 @@ export interface Filters {
 }
 
 const Home = ({
-  filters,
-}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
+      filters,
+    }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const [user, setUser] = useState();
 
   return (
-    <div className="relative min-h-screen">
+    <Index>
       <VehicleTypesContext.Provider value={filters}>
         <UserContext.Provider value={{ user, setUser }}>
           <Header />
           <ChangeUser />
         </UserContext.Provider>
       </VehicleTypesContext.Provider>
-    </div>
+    </Index>
   );
 };
 
@@ -62,7 +63,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const fuelType = prisma.fuelType.findMany().then();
   const vehicleModel = prisma.vehicleModel.findMany().then();
 
-  const filters = await Promise.all([
+  const filters: Filters = await Promise.all([
     brand,
     vehicleType,
     body,
@@ -88,3 +89,8 @@ export const getServerSideProps: GetServerSideProps = async () => {
     },
   };
 };
+
+const Index = styled.div`
+  position: relative;
+  min-height: 100vh;
+`;

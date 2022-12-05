@@ -1,4 +1,6 @@
-import { Dispatch, SetStateAction, useContext } from "react";
+import { useContext } from "react";
+import styled from "styled-components";
+import { Themes } from "../pages/StyleVariables";
 import {
   DeletingContext,
   FilterContext,
@@ -9,14 +11,14 @@ import {
 import TrashIcon from "./svgs/TrashIcon";
 
 interface Props {
-  vehicle: SavedVehicle;
+  vehicle?: SavedVehicle;
   type: state;
   index?: number;
 }
 
 const VehicleOverview = ({ vehicle, index, type }: Props) => {
-  const { deleting, setDeleting } = useContext(DeletingContext);
-  const { view, setView } = useContext(FilterContext);
+  const { setDeleting } = useContext(DeletingContext);
+  const { setView } = useContext(FilterContext);
   const { selected, setSelected } = useContext(SelectedContext);
 
   const deleteVehicle = () => {
@@ -26,34 +28,68 @@ const VehicleOverview = ({ vehicle, index, type }: Props) => {
   };
 
   return (
-    <div
-      className={`my-4 grid grid-cols-[1fr_auto] gap-2 ${
-        type === state.Select && "cursor-pointer"
-      }`}
-    >
+    <Container type={type}>
       <div
-        onClick={() => type === state.Select && setSelected(index)}
-        className="grid grid-cols-[1fr_auto] gap-2 rounded-full bg-offWhite py-2 px-4"
+        onClick={() => setSelected(type === state.Select ? index : null)}
+        className="overview"
       >
-        <div>{`${vehicle.brand}, ${vehicle.year}, ${vehicle.model}, ${
-          vehicle.cilinder
-        }, ${vehicle.fuel} ${
-          vehicle.transmision !== undefined ? vehicle.transmision : ""
-        }`}</div>
-        {type === state.Select && (
-          <input type={"radio"} readOnly checked={selected === index} />
+        {type === state.None && <div>Buscar para cualquier vehiculo</div>}
+        {vehicle && type !== state.None && (
+          <>
+            <div>{`${vehicle.brand}, ${vehicle.year}, ${vehicle.model}, ${
+              vehicle.cilinder
+            }, ${vehicle.fuel} ${
+              vehicle.transmision !== undefined ? vehicle.transmision : ""
+            }`}</div>
+          </>
+        )}
+        {type !== state.Delete && (
+          <input
+            type={"radio"}
+            readOnly
+            checked={
+              selected === index || (selected === null && type === state.None)
+            }
+          />
         )}
       </div>
       {type === state.Select && (
-        <button
-          className="aspect-square rounded-full bg-offWhite p-3"
-          onClick={deleteVehicle}
-        >
+        <button onClick={deleteVehicle}>
           <TrashIcon className="aspect-square w-4 fill-main" />
         </button>
       )}
-    </div>
+    </Container>
   );
 };
 
 export default VehicleOverview;
+
+interface ContainerProps {
+  type: state;
+}
+
+const Container = styled.div<ContainerProps>`
+  grid-template-columns: 1fr auto;
+  display: grid;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+
+  ${({ type }) => type === state.Select && `cursor: pointer;`}
+
+  .overview {
+    background-color: ${Themes.offWhite};
+    border-radius: 9999px;
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: 1fr auto;
+    padding: 0.5rem 1rem;
+  }
+
+  button {
+    aspect-ratio: 1/1;
+    border-radius: 999px;
+    background-color: ${Themes.offWhite};
+    padding: 0.75rem;
+  }
+`;

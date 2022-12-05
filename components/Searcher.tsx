@@ -1,4 +1,6 @@
 import React from "react";
+import styled from "styled-components";
+import { Themes } from "../pages/StyleVariables";
 import { SavedVehicle } from "./Filter/VehicleFilter";
 import CarIcon from "./svgs/CarIcon";
 import Glass from "./svgs/GlassIcon";
@@ -23,26 +25,22 @@ const Searcher = React.forwardRef<HTMLButtonElement, Props>(
     };
 
     return (
-      <div className="grid rounded border border-main p-1 sm:grid-cols-[34%_65%] sm:gap-[1%]">
-        <div className="input-container mb-1 grid grid-cols-[1fr_auto] overflow-hidden rounded bg-lightMain sm:order-2 sm:mb-0">
+      <Container>
+        <div className="input-container">
           <input
             id="searcher"
-            className="bg-lightMain p-2"
             type="text"
             placeholder="Busca el producto para tu vehiculo"
           />
           <button onClick={search}>
-            <Glass className="h-full cursor-pointer border-l-2 border-gray-400 fill-main p-3" />
+            <Glass />
           </button>
         </div>
-        <button
-          ref={ref}
-          className="filter-button flex w-full justify-center gap-2 rounded border border-main p-2 font-bold text-main sm:order-1"
-        >
-          <p className="sm:truncate">{content}</p>
-          <CarIcon className="h-6 fill-main flex-none" />
+        <button className="window-toggle-button" ref={ref}>
+          <p>{content}</p>
+          <CarIcon />
         </button>
-      </div>
+      </Container>
     );
   }
 );
@@ -50,3 +48,70 @@ const Searcher = React.forwardRef<HTMLButtonElement, Props>(
 Searcher.displayName = "Searcher";
 
 export default Searcher;
+
+const Container = styled.div`
+  border: 1px ${Themes.main} solid;
+  border-radius: 0.25rem;
+  display: grid;
+  padding: 0.25rem;
+
+  @media (width > ${Themes.sm}) {
+    grid-template-columns: 34% 65%;
+    gap: 1%;
+  }
+
+  .input-container {
+    background: ${Themes.lightMain};
+    border-radius: 0.25rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+
+    @media (width > ${Themes.sm}) {
+      margin-bottom: 0;
+      order: 2;
+    }
+
+    #searcher {
+      background: ${Themes.lightMain};
+      padding: 0.5rem;
+    }
+
+    svg {
+      border-left: 2px rgb(156 163 175) solid;
+      cursor: pointer;
+      fill: ${Themes.main};
+      height: 100%;
+      padding: 0.75rem;
+    }
+  }
+
+  .window-toggle-button {
+    border: 1px ${Themes.main} solid;
+    border-radius: 0.25rem;
+    color: ${Themes.main};
+    display: flex;
+    font-weight: bold;
+    gap: 0.5rem;
+    justify-content: center;
+    padding: 0.5rem;
+    width: 100%;
+
+    @media (width > ${Themes.sm}) {
+      order: 1;
+
+      p {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    svg {
+      height: 1.5rem;
+      flex: none;
+      fill: ${Themes.main};
+    }
+  }
+`;

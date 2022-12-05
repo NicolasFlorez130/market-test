@@ -7,6 +7,8 @@ import {
   useState,
 } from "react";
 import { UserContext } from "../../pages/context/UserSlice";
+import { CloseWindowContext } from "../Header";
+import CloseIcon from "../svgs/CloseIcon";
 import Deleting from "./Deleting";
 import Filter from "./Filter";
 import Select from "./Select";
@@ -17,6 +19,7 @@ export enum state {
   Delete,
   Select,
   Warning,
+  None,
 }
 
 export interface SavedVehicle {
@@ -53,8 +56,8 @@ const VehicleFilter = forwardRef<HTMLDivElement, Props>(
     const [deleting, setDeleting] = useState<null | number>(null);
     const [selected, setSelected] = useState<null | number>(null);
 
-    const { user, setUser } = useContext(UserContext);
-
+    const { user } = useContext(UserContext);
+    const closeWindow = useContext(CloseWindowContext);
     useEffect(() => {
       key = user ? keys.user.toString() : keys.guest.toString();
       setView(undefined);
@@ -98,8 +101,14 @@ const VehicleFilter = forwardRef<HTMLDivElement, Props>(
     return (
       <div
         ref={ref}
-        className="filter-container absolute mt-1 hidden w-full translate-y-[-1rem] overflow-hidden rounded-lg border border-main bg-lightMain p-3 transition-all lg:right-0 lg:w-4/5 lg:translate-y-[-1.8rem]"
+        className="absolute mt-1 hidden w-full translate-y-[-1rem] overflow-hidden rounded-lg border border-main bg-lightMain p-3 transition-all lg:right-0 lg:w-4/5 lg:translate-y-[-1.8rem]"
       >
+        <div
+          onClick={closeWindow}
+          className="close-icon-container absolute right-0 mr-4 h-4 w-4 cursor-pointer"
+        >
+          <CloseIcon className=" w-full fill-main" />
+        </div>
         <SelectedContext.Provider value={{ selected, setSelected }}>
           <DeletingContext.Provider value={{ deleting, setDeleting }}>
             <FilterContext.Provider value={{ view, setView }}>
