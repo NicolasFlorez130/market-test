@@ -1,5 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useContext, useEffect, useState } from "react";
+import styled from "styled-components";
+import { Themes } from "../../pages/StyleVariables";
 import Button from "../Button";
 import ExclamationIcon from "../svgs/ExclamationIcon";
 import VehicleOverview from "../VehicleOverview";
@@ -9,7 +11,7 @@ import {
   key,
   SavedVehicle,
   state,
-} from "./VehicleFilter";
+} from "./FilterWrapper";
 
 const Deleting = () => {
   const { deleting } = useContext(DeletingContext);
@@ -24,25 +26,26 @@ const Deleting = () => {
     );
     setVehicle(localVehicle);
   }, []);
+  9;
 
   const accept = () => {
     const string = localStorage.getItem(key);
     const vehicles = JSON.parse(string ?? "") as SavedVehicle[];
     vehicles.splice(deleting, 1);
     localStorage.setItem(key, JSON.stringify(vehicles));
-    setView(vehicles.length > 0 ? state.Select : state.Filter);
+    setView(state.Select);
   };
 
   return (
-    <>
-      <div className="grid grid-cols-[auto_1fr] items-center gap-4">
-        <ExclamationIcon className="aspect-square w-8 fill-main" />
-        <p className="text-lg font-semibold text-main">
-          ¿Estás seguro que deseas eliminar este vehiculo?
-        </p>
+    <Container>
+      <div className="warning-container">
+        <ExclamationIcon className="exclamation-icon" />
+        <p>¿Estás seguro que deseas eliminar este vehiculo?</p>
       </div>
       {vehicle && <VehicleOverview type={state.Delete} vehicle={vehicle} />}
-      <Button onclick={accept}>Aceptar</Button>
+      <Button secondary onclick={accept}>
+        Aceptar
+      </Button>
       <Button
         onclick={() => {
           setView(state.Select);
@@ -50,8 +53,30 @@ const Deleting = () => {
       >
         Cancelar
       </Button>
-    </>
+    </Container>
   );
 };
 
 export default Deleting;
+
+const Container = styled.div`
+  .warning-container {
+    align-items: center;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: auto 1fr;
+
+    .exclamation-icon {
+      aspect-ratio: 1/1;
+      fill: ${Themes.main};
+      height: 100%;
+    }
+
+    p {
+      color: ${Themes.main};
+      font-size: 1.25rem;
+      font-weight: bold;
+      line-height: 1.75rem;
+    }
+  }
+`;

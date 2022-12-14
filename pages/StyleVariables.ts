@@ -1,5 +1,5 @@
 export const Themes = {
-  offWhite: "#F0F2F5",
+  offWhite: "#F1F2F6",
   lightMain: "#D4D6E5",
   main: "#2C2E82",
 

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { createContext, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
-import VehicleFilter, { SavedVehicle } from "./Filter/VehicleFilter";
+import FilterWrapper, { SavedVehicle } from "./Filter/FilterWrapper";
 import NavBar from "./NavBar";
 import Searcher from "./Searcher";
 import { Themes } from "./../pages/StyleVariables";
@@ -48,7 +48,7 @@ const Header = () => {
         </div>
         <div className="filter-container">
           <CloseWindowContext.Provider value={closeWindow}>
-            <VehicleFilter
+            <FilterWrapper
               setVehicle={setVehicle}
               setContent={setButtonContent}
               ref={vehicleFilter}
@@ -76,7 +76,7 @@ const Container = styled.div`
     .top-side {
       padding: 1rem;
 
-      @media (width > ${Themes.lg}) {
+      @media (min-width: ${Themes.lg}) {
         align-items: center;
         display: grid;
         grid-template-columns: 20% 80%;
@@ -88,12 +88,12 @@ const Container = styled.div`
         aspect-ratio: 3/1;
         width: 50%;
 
-        @media (width > ${Themes.sm}) {
+        @media (min-width: ${Themes.sm}) {
           margin-bottom: 1rem;
           width: 33%;
         }
 
-        @media (width > ${Themes.lg}) {
+        @media (min-width: ${Themes.lg}) {
           margin: 0;
           margin-right: 4rem;
           width: auto;

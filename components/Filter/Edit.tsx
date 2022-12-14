@@ -1,11 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { createRef, useContext, useEffect, useState } from "react";
+import { createRef, useContext, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { VehicleTypesContext } from "../../pages/context/VehicleTypesSlice";
 import { Themes } from "../../pages/StyleVariables";
 import Button from "../Button";
 import {
   DuplicatedContext,
+  EditingContext,
   FilterContext,
   key,
   SavedVehicle,
@@ -31,21 +32,36 @@ const tracciones = [
   { id: 3, label: "Tracción 4x4" },
 ];
 
-const Filter = () => {
+interface Props {
+  vehicles: SavedVehicle[];
+}
+
+const Edit = ({ vehicles }: Props) => {
   const filter = useContext(VehicleTypesContext);
   const { setView } = useContext(FilterContext);
   const { setSelected } = useContext(SelectedContext);
+  const { editing: index } = useContext(EditingContext);
   const setDuplicate = useContext(DuplicatedContext);
 
-  const [type, setType] = useState<string | null>(null);
-  const [brand, setBrand] = useState<string | null>(null);
-  const [body, setBody] = useState<string | null>(null);
-  const [fuel, setFuel] = useState<string | null>(null);
-  const [transmision, setTransmision] = useState<string | null>(null);
-  const [traction, setTraction] = useState<string | null>(null);
-  const [cilinder, setCilinder] = useState<string | null>(null);
-  const [year, setYear] = useState<string | null>(null);
-  const [model, setModel] = useState<string | null>(null);
+  const editingVehicle = vehicles[index];
+
+  const [locked, setLocked] = useState(true);
+
+  const [type, setType] = useState<string | null>(editingVehicle.ids.type);
+  const [body, setBody] = useState<string | null>(editingVehicle.ids.body);
+  const [year, setYear] = useState<string | null>(editingVehicle.ids.year);
+  const [brand, setBrand] = useState<string | null>(editingVehicle.ids.brand);
+  const [fuel, setFuel] = useState<string | null>(editingVehicle.ids.fuel);
+  const [transmision, setTransmision] = useState<string | null>(
+    editingVehicle.ids.transmision
+  );
+  const [traction, setTraction] = useState<string | null>(
+    editingVehicle.ids.traction
+  );
+  const [cilinder, setCilinder] = useState<string | null>(
+    editingVehicle.ids.cilinder
+  );
+  const [model, setModel] = useState<string | null>(editingVehicle.ids.model);
 
   const [isValid, setIsValid] = useState<Boolean>(false);
 
@@ -72,7 +88,7 @@ const Filter = () => {
     )?.id;
 
   const submitVehicle = () => {
-    let saved: string | Array<any> | null = localStorage.getItem(key);
+    let saved: string | SavedVehicle[] | null = localStorage.getItem(key);
 
     if (saved) {
       saved = JSON.parse(saved) as SavedVehicle[];
@@ -147,15 +163,17 @@ const Filter = () => {
       setDuplicate(true);
       return;
     }
-    (saved as SavedVehicle[]).push(newVehicle);
+    (saved as SavedVehicle[]).splice(index, 1, newVehicle);
 
     localStorage.setItem(key, JSON.stringify(saved));
 
     setView(state.Select);
-    setSelected(saved && saved.length - 1);
+    setSelected(index);
   };
 
   useEffect(() => {
+    if (locked) return;
+
     if (bodyInput.current) bodyInput.current.selectedIndex = 0;
     if (brandInput.current) brandInput.current.selectedIndex = 0;
     if (tractionInput.current) tractionInput.current.selectedIndex = 0;
@@ -166,18 +184,24 @@ const Filter = () => {
   }, [type]);
 
   useEffect(() => {
+    if (locked) return;
+
     if (brandInput.current) brandInput.current.selectedIndex = 0;
 
     setBrand(null);
   }, [body]);
 
   useEffect(() => {
+    if (locked) return;
+
     if (modelInput.current) modelInput.current.selectedIndex = 0;
 
     setModel(null);
   }, [brand]);
 
   useEffect(() => {
+    if (locked) return;
+
     if (cilinderInput.current) cilinderInput.current.selectedIndex = 0;
     if (fuelInput.current) fuelInput.current.selectedIndex = 0;
 
@@ -202,12 +226,18 @@ const Filter = () => {
 
   return (
     <Container>
-      <p>Agregar tu vehiculo para filtrar tu busqueda</p>
+      <div className="top">
+        <p>Edita tu vehiculo</p>
+        <Button disabled={!locked} onclick={() => setLocked(false)}>
+          Comenzar a editar
+        </Button>
+      </div>
       <div className="filters-container">
         <div className="selects-rows row-1">
           <select
+            disabled={locked}
             ref={typeInput}
-            defaultValue="n"
+            defaultValue={editingVehicle.ids.type}
             onChange={(e) => setType(e.target.value)}
             className={`first-select ${type == "n" && "not-selected"}`}
             name="type"
@@ -227,8 +257,8 @@ const Filter = () => {
             ref={bodyInput}
             name="body"
             id="body"
-            disabled={!type}
-            defaultValue="n"
+            disabled={!type || locked}
+            defaultValue={editingVehicle.ids.body}
             onChange={(e) => setBody(e.target.value)}
           >
             <option value="n" disabled>
@@ -236,7 +266,11 @@ const Filter = () => {
             </option>
             {type &&
               filter.vgl_carroceriasvehiculos
-                .filter((body) => body.tipovehiculo === parseInt(type))
+                .filter(
+                  (body) =>
+                    body.tipovehiculo === parseInt(type) &&
+                    body.id.toString() !== editingVehicle.ids.body
+                )
                 .map((body) => (
                   <option value={body.id} key={body.id}>
                     {body.label}
@@ -247,8 +281,8 @@ const Filter = () => {
             ref={brandInput}
             name="brand"
             id="brand"
-            disabled={!type || !body}
-            defaultValue="n"
+            disabled={!type || !body || locked}
+            defaultValue={editingVehicle.brand}
             onChange={(e) => setBrand(e.target.value)}
           >
             <option disabled value="n">
@@ -273,8 +307,8 @@ const Filter = () => {
             ref={yearInput}
             name="year"
             id="year"
-            disabled={!type}
-            defaultValue="n"
+            disabled={!type || locked}
+            defaultValue={editingVehicle.year}
             onChange={(e) => setYear(e.target.value)}
           >
             <option disabled value="n">
@@ -290,8 +324,8 @@ const Filter = () => {
             ref={tractionInput}
             name="traction"
             id="traction"
-            disabled={!type || motorbikeSelected}
-            defaultValue="n"
+            disabled={!type || motorbikeSelected || locked}
+            defaultValue={editingVehicle.traction}
             onChange={(e) => setTraction(e.target.value)}
           >
             <option disabled value="n">
@@ -310,8 +344,8 @@ const Filter = () => {
             ref={modelInput}
             name="model"
             id="model"
-            disabled={!brand}
-            defaultValue="n"
+            disabled={!brand || locked}
+            defaultValue={editingVehicle.model}
             onChange={(e) => setModel(e.target.value)}
           >
             <option disabled value="n">
@@ -335,8 +369,8 @@ const Filter = () => {
             ref={cilinderInput}
             name="cilinder"
             id="cilinder"
-            disabled={!model}
-            defaultValue="n"
+            disabled={!model || locked}
+            defaultValue={editingVehicle.cilinder}
             onChange={(e) => setCilinder(e.target.value)}
           >
             <option disabled value="n">
@@ -355,8 +389,8 @@ const Filter = () => {
             ref={fuelInput}
             name="fuel"
             id="fuel"
-            disabled={!model}
-            defaultValue="n"
+            disabled={!model || locked}
+            defaultValue={editingVehicle.fuel}
             onChange={(e) => setFuel(e.target.value)}
           >
             <option disabled value="n">
@@ -373,8 +407,8 @@ const Filter = () => {
             ref={transmisionInput}
             name="transmision"
             id="transmision"
-            disabled={!fuel || electricSelected}
-            defaultValue="n"
+            disabled={!fuel || electricSelected || locked}
+            defaultValue={editingVehicle.transmision}
             onChange={(e) => setTransmision(e.target.value)}
           >
             <option disabled value="n">
@@ -392,7 +426,7 @@ const Filter = () => {
           <Button secondary onclick={() => setView(state.Select)}>
             Cancelar
           </Button>
-          <Button onclick={submitVehicle} disabled={!isValid}>
+          <Button onclick={submitVehicle} disabled={!isValid || locked}>
             Listo
           </Button>
         </div>
@@ -401,15 +435,26 @@ const Filter = () => {
   );
 };
 
-export default Filter;
+export default Edit;
 
 const Container = styled.div`
-  & > p {
-    color: ${Themes.main};
-    font-weight: bold;
-    font-size: 1.25rem;
-    line-height: 1.75rem;
-    margin-bottom: 1rem;
+  .top {
+    align-items: center;
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 0.75rem;
+
+    p {
+      color: ${Themes.main};
+      display: inline;
+      font-weight: bold;
+      font-size: 1.25rem;
+      line-height: 1.75rem;
+    }
+
+    button {
+      margin: 0;
+    }
   }
 
   .filters-container {

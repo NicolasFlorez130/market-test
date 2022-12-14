@@ -1,4 +1,4 @@
 import { createContext } from "react";
-import { Filters } from "..";
+import { Filter } from "../../types/Filter";
 
-export const VehicleTypesContext = createContext({} as Filters);
+export const VehicleTypesContext = createContext({} as Filter);

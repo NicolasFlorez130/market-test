@@ -3,14 +3,14 @@ import { useContext } from "react";
 import styled from "styled-components";
 import Button from "../Button";
 import ExclamationIcon from "../svgs/ExclamationIcon";
-import { FilterContext, state } from "./VehicleFilter";
+import { FilterContext, state } from "./FilterWrapper";
 import { Themes } from "./../../pages/StyleVariables";
 
 const Warning = () => {
   const { setView } = useContext(FilterContext);
 
   return (
-    <>
+    <Container>
       <div>
         <ExclamationIcon />
         <p>Has llegado al maximo de vehiculos que puedes agregar.</p>
@@ -23,7 +23,7 @@ const Warning = () => {
       >
         Aceptar
       </Button>
-    </>
+    </Container>
   );
 };
 

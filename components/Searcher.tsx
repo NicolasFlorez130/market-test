@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Themes } from "../pages/StyleVariables";
-import { SavedVehicle } from "./Filter/VehicleFilter";
+import { SavedVehicle } from "./Filter/FilterWrapper";
 import CarIcon from "./svgs/CarIcon";
 import Glass from "./svgs/GlassIcon";
 
@@ -55,7 +55,7 @@ const Container = styled.div`
   display: grid;
   padding: 0.25rem;
 
-  @media (width > ${Themes.sm}) {
+  @media (min-width: ${Themes.sm}) {
     grid-template-columns: 34% 65%;
     gap: 1%;
   }
@@ -68,7 +68,7 @@ const Container = styled.div`
     margin-bottom: 0.25rem;
     overflow: hidden;
 
-    @media (width > ${Themes.sm}) {
+    @media (min-width: ${Themes.sm}) {
       margin-bottom: 0;
       order: 2;
     }
@@ -98,7 +98,7 @@ const Container = styled.div`
     padding: 0.5rem;
     width: 100%;
 
-    @media (width > ${Themes.sm}) {
+    @media (min-width: ${Themes.sm}) {
       order: 1;
 
       p {

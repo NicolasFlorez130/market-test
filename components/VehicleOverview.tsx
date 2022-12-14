@@ -3,11 +3,13 @@ import styled from "styled-components";
 import { Themes } from "../pages/StyleVariables";
 import {
   DeletingContext,
+  EditingContext,
   FilterContext,
   SavedVehicle,
   SelectedContext,
   state,
-} from "./Filter/VehicleFilter";
+} from "./Filter/FilterWrapper";
+import EditIcon from "./svgs/EditIcon";
 import TrashIcon from "./svgs/TrashIcon";
 
 interface Props {
@@ -20,10 +22,17 @@ const VehicleOverview = ({ vehicle, index, type }: Props) => {
   const { setDeleting } = useContext(DeletingContext);
   const { setView } = useContext(FilterContext);
   const { selected, setSelected } = useContext(SelectedContext);
+  const { editing, setEditing } = useContext(EditingContext);
 
   const deleteVehicle = () => {
     setDeleting(index);
     setView(state.Delete);
+    setSelected(null);
+  };
+
+  const editVehicle = () => {
+    setEditing(index);
+    setView(state.Edit);
     setSelected(null);
   };
 
@@ -53,10 +62,27 @@ const VehicleOverview = ({ vehicle, index, type }: Props) => {
           />
         )}
       </div>
+      {type === state.None && (
+        <>
+          <button className="dummy-buttons">
+            <svg />
+          </button>
+          <button className="dummy-buttons">
+            <svg />
+          </button>
+        </>
+      )}
       {type === state.Select && (
-        <button onClick={deleteVehicle}>
-          <TrashIcon className="aspect-square w-4 fill-main" />
-        </button>
+        <>
+          <button onClick={deleteVehicle}>
+            <span className="tooltip">Eliminar</span>
+            <TrashIcon />
+          </button>
+          <button onClick={editVehicle}>
+            <span className="tooltip">Editar</span>
+            <EditIcon />
+          </button>
+        </>
       )}
     </Container>
   );
@@ -69,13 +95,12 @@ interface ContainerProps {
 }
 
 const Container = styled.div<ContainerProps>`
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   display: grid;
   margin-top: 0.75rem;
   margin-bottom: 0.75rem;
-  gap: 0.5rem;
 
-  ${({ type }) => type === state.Select && `cursor: pointer;`}
+  ${({ type }) => type !== state.Delete && `gap: 0.5rem; cursor: pointer;`}
 
   .overview {
     background-color: ${Themes.offWhite};
@@ -91,5 +116,35 @@ const Container = styled.div<ContainerProps>`
     border-radius: 999px;
     background-color: ${Themes.offWhite};
     padding: 0.75rem;
+    position: relative;
+    display: flex;
+
+    svg {
+      aspect-ratio: 1/1;
+      fill: ${Themes.main};
+      width: 1rem;
+    }
+
+    &:hover {
+      .tooltip {
+        display: block;
+      }
+    }
+
+    .tooltip {
+      background-color: rgba(211, 211, 211, 0.6);
+      border-radius: 4px;
+      display: none;
+      top: -70%;
+      left: 0;
+      padding: 2px;
+      position: absolute;
+      text-align: center;
+    }
+
+    &.dummy-buttons {
+      opacity: 0;
+      cursor: default;
+    }
   }
 `;
