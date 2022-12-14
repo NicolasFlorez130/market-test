@@ -1,8 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import axios from "axios";
 import { createRef, useContext, useEffect, useState } from "react";
 import styled from "styled-components";
+import { UserContext } from "../../pages/context/UserSlice";
 import { VehicleTypesContext } from "../../pages/context/VehicleTypesSlice";
 import { Themes } from "../../pages/StyleVariables";
+import { FetchedVehicle } from "../../types/Filter";
 import Button from "../Button";
 import {
   DuplicatedContext,
@@ -31,11 +34,16 @@ const tracciones = [
   { id: 3, label: "Tracción 4x4" },
 ];
 
-const Filter = () => {
+interface Props {
+  vehicles: SavedVehicle[];
+}
+
+const Filter = ({ vehicles }: Props) => {
   const filter = useContext(VehicleTypesContext);
   const { setView } = useContext(FilterContext);
   const { setSelected } = useContext(SelectedContext);
   const setDuplicate = useContext(DuplicatedContext);
+  const { user } = useContext(UserContext);
 
   const [type, setType] = useState<string | null>(null);
   const [brand, setBrand] = useState<string | null>(null);
@@ -71,14 +79,11 @@ const Filter = () => {
       (type) => type.label.toLowerCase() === "eléctricos"
     )?.id;
 
-  const submitVehicle = () => {
-    let saved: string | Array<any> | null = localStorage.getItem(key);
+  const submitVehicle = async () => {
+    //  let saved: string | Array<any> | null = localStorage.getItem(key);
 
-    if (saved) {
-      saved = JSON.parse(saved) as SavedVehicle[];
-    } else {
-      saved = [];
-    }
+    const saved = [...vehicles];
+
     const newVehicle = {
       type: filter.vgl_tiposvehiculos.find(
         (el) => el.id === parseInt(type ?? "")
@@ -114,15 +119,15 @@ const Filter = () => {
       )?.label,
 
       ids: {
-        type,
-        brand,
         body,
+        brand,
+        cilinder,
         fuel,
+        model,
         transmision,
         traction,
-        cilinder,
+        type,
         year,
-        model,
       },
     } as SavedVehicle;
 
@@ -132,25 +137,45 @@ const Filter = () => {
       const rotationKeys = Object.values(vehicle.ids);
       const newVehicleKeys = Object.values(newVehicle.ids);
 
-      console.log(rotationKeys, newVehicleKeys);
-
       let equals = true;
 
       rotationKeys.forEach((rK, i) => {
-        rK !== newVehicleKeys[i] ? (equals = false) : 0;
+        rK != newVehicleKeys[i] ? (equals = false) : 0;
       });
 
       equals ? (duplicate = true) : 0;
     });
 
+    console.log(duplicate);
+
     if (duplicate) {
       setDuplicate(true);
       return;
     }
-    (saved as SavedVehicle[]).push(newVehicle);
 
-    localStorage.setItem(key, JSON.stringify(saved));
+    console.log(duplicate);
+    saved.push(newVehicle);
 
+    if (user) {
+      const formattedVehicle = {
+        anno: parseInt(newVehicle.ids.year),
+        carroceria: parseInt(newVehicle.ids.body),
+        cilindrajemotor: parseInt(newVehicle.ids.cilinder),
+        comentario: "Vehiculo agregado desde el filtro de busqueda",
+        estado: 1,
+        idusuario: "222222", //here goes the id
+        marca: parseInt(newVehicle.ids.brand),
+        modelo: parseInt(newVehicle.ids.model),
+        tipocombustible: parseInt(newVehicle.ids.fuel),
+        tipotraccion: parseInt(newVehicle.ids.traction),
+        tipovehiculo: parseInt(newVehicle.ids.type),
+        transmision: parseInt(newVehicle.ids.transmision),
+      };
+
+      await axios.post("https://sitbusiness.co/mrp/api/27", formattedVehicle);
+    } else {
+      localStorage.setItem(key, JSON.stringify(saved));
+    }
     setView(state.Select);
     setSelected(saved && saved.length - 1);
   };
@@ -410,6 +435,7 @@ const Container = styled.div`
     font-size: 1.25rem;
     line-height: 1.75rem;
     margin-bottom: 1rem;
+    margin-right: 1.5rem;
   }
 
   .filters-container {

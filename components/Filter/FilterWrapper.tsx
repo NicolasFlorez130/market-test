@@ -43,6 +43,7 @@ export interface Vehicle {
 }
 
 export interface SavedVehicle extends Vehicle {
+  id?: number;
   ids: Vehicle;
 }
 
@@ -96,7 +97,6 @@ const VehicleWrapper = forwardRef<HTMLDivElement, Props>(
     const closeWindow = useContext(CloseWindowContext);
 
     const searchVehiclesLocal = async () => {
-      console.log("llamao");
       if (user) {
         const { data: $vehicles }: { data: FetchedVehicle[] } =
           await axios.post("https://sitbusiness.co/mrp/api/28", {
@@ -104,6 +104,8 @@ const VehicleWrapper = forwardRef<HTMLDivElement, Props>(
           });
 
         const formattedVehicles: SavedVehicle[] = $vehicles.map((v) => ({
+          id: v.id,
+
           type:
             filter.vgl_tiposvehiculos.find((el) => el.id === v.tipovehiculo)
               ?.label ?? "indefinido",
@@ -146,8 +148,8 @@ const VehicleWrapper = forwardRef<HTMLDivElement, Props>(
             cilinder: v.cilindrajemotor.toString(),
             fuel: v.tipocombustible.toString(),
             model: v.modelo.toString(),
-            traction: v.tipotraccion.toString(),
-            transmision: v.transmision.toString(),
+            traction: v.tipotraccion?.toString() ?? "",
+            transmision: v.transmision?.toString() ?? "",
             type: v.tipovehiculo.toString(),
             year: v.anno.toString(),
           },
@@ -169,12 +171,7 @@ const VehicleWrapper = forwardRef<HTMLDivElement, Props>(
     };
 
     useEffect(() => {
-      console.log(vehicles);
-    }, [vehicles]);
-
-    useEffect(() => {
-      if (user) {
-      } else {
+      if (!user) {
         searchVehiclesLocal();
       }
 
@@ -189,19 +186,26 @@ const VehicleWrapper = forwardRef<HTMLDivElement, Props>(
     }, [view]);
 
     useEffect(() => {
-      const string = localStorage.getItem(key);
-      const vehicle = string
-        ? (JSON.parse(string) as SavedVehicle[])[selected ?? 0]
-        : null;
+      let vehicle;
+      if (user) {
+        vehicle = vehicles?.find((v) => v.id === selected);
+      } else {
+        const string = localStorage.getItem(key);
+        vehicle = string
+          ? (JSON.parse(string) as SavedVehicle[])[selected ?? 0]
+          : null;
+      }
 
-      setVehicle(selected !== null ? vehicle : null);
+      setVehicle(selected !== null ? (vehicle as SavedVehicle) : null);
 
       setContent(
         (selected !== null || selected === 0) && vehicle
           ? `${vehicle.brand}, ${vehicle.year}, ${vehicle.model}, ${
               vehicle.cilinder
-            }, ${vehicle.fuel} ${
-              vehicle.transmision !== undefined ? vehicle.transmision : ""
+            }, ${vehicle.fuel}${
+              vehicle.transmision !== undefined
+                ? ", " + vehicle.transmision
+                : ""
             }`
           : "Agregar vehiculo"
       );
@@ -236,11 +240,11 @@ const VehicleWrapper = forwardRef<HTMLDivElement, Props>(
                 <EditingContext.Provider value={{ editing, setEditing }}>
                   {vehicles &&
                     (view === state.Filter ? (
-                      <Filter />
+                      <Filter vehicles={vehicles} />
                     ) : view === state.Select ? (
                       <Select vehicles={vehicles} />
                     ) : view === state.Delete ? (
-                      <Deleting />
+                      <Deleting vehicles={vehicles} />
                     ) : view === state.Warning ? (
                       <Warning />
                     ) : (

@@ -1,5 +1,6 @@
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import styled from "styled-components";
+import { UserContext } from "../pages/context/UserSlice";
 import { Themes } from "../pages/StyleVariables";
 import {
   DeletingContext,
@@ -22,10 +23,32 @@ const VehicleOverview = ({ vehicle, index, type }: Props) => {
   const { setDeleting } = useContext(DeletingContext);
   const { setView } = useContext(FilterContext);
   const { selected, setSelected } = useContext(SelectedContext);
-  const { editing, setEditing } = useContext(EditingContext);
+  const { setEditing } = useContext(EditingContext);
+  const { user } = useContext(UserContext);
+
+  let isSelected: boolean;
+
+  if (user) {
+    isSelected = vehicle?.id === selected;
+  } else {
+    isSelected =
+      selected === index || (selected === null && type === state.None);
+  }
+
+  const selectVehicle = () => {
+    if (user) {
+      setSelected(vehicle?.id);
+    } else {
+      setSelected(type === state.Select ? index : null);
+    }
+  };
 
   const deleteVehicle = () => {
-    setDeleting(index);
+    if (user) {
+      setDeleting(vehicle?.id);
+    } else {
+      setDeleting(index);
+    }
     setView(state.Delete);
     setSelected(null);
   };
@@ -38,28 +61,21 @@ const VehicleOverview = ({ vehicle, index, type }: Props) => {
 
   return (
     <Container type={type}>
-      <div
-        onClick={() => setSelected(type === state.Select ? index : null)}
-        className="overview"
-      >
+      <div onClick={selectVehicle} className="overview">
         {type === state.None && <div>Buscar para cualquier vehiculo</div>}
         {vehicle && type !== state.None && (
           <>
             <div>{`${vehicle.brand}, ${vehicle.year}, ${vehicle.model}, ${
               vehicle.cilinder
-            }, ${vehicle.fuel} ${
-              vehicle.transmision !== undefined ? vehicle.transmision : ""
+            }, ${vehicle.fuel}${
+              vehicle.transmision !== undefined
+                ? ", " + vehicle.transmision
+                : ""
             }`}</div>
           </>
         )}
         {type !== state.Delete && (
-          <input
-            type={"radio"}
-            readOnly
-            checked={
-              selected === index || (selected === null && type === state.None)
-            }
-          />
+          <input type={"radio"} readOnly checked={isSelected} />
         )}
       </div>
       {type === state.None && (
@@ -109,6 +125,12 @@ const Container = styled.div<ContainerProps>`
     gap: 0.5rem;
     grid-template-columns: 1fr auto;
     padding: 0.5rem 1rem;
+
+    div {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
   button {

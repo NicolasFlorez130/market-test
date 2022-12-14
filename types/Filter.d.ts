@@ -85,9 +85,9 @@ export interface FetchedVehicle {
   modelo: number;
   cilindrajemotor: number;
   tipocombustible: number;
-  transmision: number;
-  tipotraccion: number;
+  transmision?: number;
+  tipotraccion?: number;
   estado: number;
-  fecha: Date;
+  fecha?: Date;
   comentario: string;
 }

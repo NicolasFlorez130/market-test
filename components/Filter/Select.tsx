@@ -6,6 +6,7 @@ import { CloseWindowContext } from "../Header";
 import VehicleOverview from "../VehicleOverview";
 import { FilterContext, key, keys, SavedVehicle, state } from "./FilterWrapper";
 import { Themes } from "./../../pages/StyleVariables";
+import { UserContext } from "../../pages/context/UserSlice";
 
 interface Props {
   vehicles: SavedVehicle[];
@@ -14,11 +15,12 @@ interface Props {
 const Select = ({ vehicles }: Props) => {
   const { setView } = useContext(FilterContext);
   const closeWindow = useContext(CloseWindowContext);
+  const { user } = useContext(UserContext);
 
   const goToCreate = () => {
-    const length = key === keys.guest.toString() ? 3 : 10;
+    const limit = user ? 10 : 3;
 
-    vehicles.length >= length ? setView(state.Warning) : setView(state.Filter);
+    vehicles.length >= limit ? setView(state.Warning) : setView(state.Filter);
   };
 
   return (
@@ -26,9 +28,16 @@ const Select = ({ vehicles }: Props) => {
       <div className="select-container">
         <p>Agrega tu vehiculo para filtrar tu busqueda</p>
         <VehicleOverview type={state.None} />
-        {vehicles.map((op, i) => (
-          <VehicleOverview type={state.Select} key={i} index={i} vehicle={op} />
-        ))}
+        <div className="vehicles-container">
+          {vehicles.map((op, i) => (
+            <VehicleOverview
+              type={state.Select}
+              key={i}
+              index={i}
+              vehicle={op}
+            />
+          ))}
+        </div>
         <button className="add-vehicle-button" onClick={goToCreate}>
           Agregar vehiculo
         </button>
@@ -46,17 +55,34 @@ const Container = styled.div`
   display: grid;
 
   .select-container {
+    .vehicles-container {
+      max-height: 15rem;
+      overflow: scroll;
+
+      & > div {
+        &:first-child {
+          margin-top: 0;
+        }
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+
     & > p {
       font-size: 1.25rem;
       font-weight: bold;
       line-height: 1.75rem;
       color: ${Themes.main};
+      padding-right: 1.5rem;
     }
 
     .add-vehicle-button {
       background-color: ${Themes.offWhite};
       border-radius: 999px;
       margin-bottom: 1rem;
+      margin-top: 0.75rem;
       padding: 0.5rem 1rem;
       text-align: start;
       width: 100%;

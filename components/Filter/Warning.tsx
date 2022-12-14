@@ -43,15 +43,17 @@ const Container = styled.div`
     }
 
     p {
-      font-size: 1.125rem;
-      line-height: 1.75rem;
-      font-weight: 600;
       color: ${Themes.main};
+      font-size: 1.125rem;
+      font-weight: 600;
+      line-height: 1.75rem;
+      margin-right: 1.5rem;
     }
   }
 
   & > p {
     color: ${Themes.main};
     margin: 1rem;
+    text-align: justify;
   }
 `;

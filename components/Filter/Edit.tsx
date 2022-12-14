@@ -130,15 +130,15 @@ const Edit = ({ vehicles }: Props) => {
       )?.label,
 
       ids: {
-        type,
-        brand,
         body,
+        brand,
+        cilinder,
         fuel,
+        model,
         transmision,
         traction,
-        cilinder,
+        type,
         year,
-        model,
       },
     } as SavedVehicle;
 
@@ -266,11 +266,7 @@ const Edit = ({ vehicles }: Props) => {
             </option>
             {type &&
               filter.vgl_carroceriasvehiculos
-                .filter(
-                  (body) =>
-                    body.tipovehiculo === parseInt(type) &&
-                    body.id.toString() !== editingVehicle.ids.body
-                )
+                .filter((body) => body.tipovehiculo === parseInt(type))
                 .map((body) => (
                   <option value={body.id} key={body.id}>
                     {body.label}
@@ -282,7 +278,7 @@ const Edit = ({ vehicles }: Props) => {
             name="brand"
             id="brand"
             disabled={!type || !body || locked}
-            defaultValue={editingVehicle.brand}
+            defaultValue={editingVehicle.ids.brand}
             onChange={(e) => setBrand(e.target.value)}
           >
             <option disabled value="n">
@@ -308,7 +304,7 @@ const Edit = ({ vehicles }: Props) => {
             name="year"
             id="year"
             disabled={!type || locked}
-            defaultValue={editingVehicle.year}
+            defaultValue={editingVehicle.ids.year}
             onChange={(e) => setYear(e.target.value)}
           >
             <option disabled value="n">
@@ -325,7 +321,7 @@ const Edit = ({ vehicles }: Props) => {
             name="traction"
             id="traction"
             disabled={!type || motorbikeSelected || locked}
-            defaultValue={editingVehicle.traction}
+            defaultValue={editingVehicle.ids.traction}
             onChange={(e) => setTraction(e.target.value)}
           >
             <option disabled value="n">
@@ -345,7 +341,7 @@ const Edit = ({ vehicles }: Props) => {
             name="model"
             id="model"
             disabled={!brand || locked}
-            defaultValue={editingVehicle.model}
+            defaultValue={editingVehicle.ids.model}
             onChange={(e) => setModel(e.target.value)}
           >
             <option disabled value="n">
@@ -370,7 +366,7 @@ const Edit = ({ vehicles }: Props) => {
             name="cilinder"
             id="cilinder"
             disabled={!model || locked}
-            defaultValue={editingVehicle.cilinder}
+            defaultValue={editingVehicle.ids.cilinder}
             onChange={(e) => setCilinder(e.target.value)}
           >
             <option disabled value="n">
@@ -390,7 +386,7 @@ const Edit = ({ vehicles }: Props) => {
             name="fuel"
             id="fuel"
             disabled={!model || locked}
-            defaultValue={editingVehicle.fuel}
+            defaultValue={editingVehicle.ids.fuel}
             onChange={(e) => setFuel(e.target.value)}
           >
             <option disabled value="n">
@@ -408,7 +404,7 @@ const Edit = ({ vehicles }: Props) => {
             name="transmision"
             id="transmision"
             disabled={!fuel || electricSelected || locked}
-            defaultValue={editingVehicle.transmision}
+            defaultValue={editingVehicle.ids.transmision}
             onChange={(e) => setTransmision(e.target.value)}
           >
             <option disabled value="n">
@@ -454,6 +450,7 @@ const Container = styled.div`
 
     button {
       margin: 0;
+      margin-right: 1.5rem;
     }
   }
 

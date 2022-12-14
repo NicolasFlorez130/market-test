@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
+import { UserContext } from "../../pages/context/UserSlice";
 import { Themes } from "../../pages/StyleVariables";
 import Button from "../Button";
 import ExclamationIcon from "../svgs/ExclamationIcon";
@@ -13,27 +14,40 @@ import {
   state,
 } from "./FilterWrapper";
 
-const Deleting = () => {
+interface Props {
+  vehicles: SavedVehicle[];
+}
+
+const Deleting = ({ vehicles }: Props) => {
   const { deleting } = useContext(DeletingContext);
   const { setView } = useContext(FilterContext);
+  const { user } = useContext(UserContext);
 
   const [vehicle, setVehicle] = useState<SavedVehicle>();
 
   useEffect(() => {
-    const string = localStorage.getItem(key);
-    const localVehicle = (JSON.parse(string ?? "") as SavedVehicle[]).at(
-      deleting
-    );
-    setVehicle(localVehicle);
+    if (user) {
+      const vehicle = vehicles.find((v) => v.id === parseInt(deleting));
+
+      setVehicle(vehicle);
+    } else {
+      const string = localStorage.getItem(key);
+      const localVehicle = (JSON.parse(string ?? "") as SavedVehicle[]).at(
+        deleting
+      );
+      setVehicle(localVehicle);
+    }
   }, []);
-  9;
 
   const accept = () => {
-    const string = localStorage.getItem(key);
-    const vehicles = JSON.parse(string ?? "") as SavedVehicle[];
-    vehicles.splice(deleting, 1);
-    localStorage.setItem(key, JSON.stringify(vehicles));
-    setView(state.Select);
+    if (user) {
+    } else {
+      const string = localStorage.getItem(key);
+      const vehicles = JSON.parse(string ?? "") as SavedVehicle[];
+      vehicles.splice(deleting, 1);
+      localStorage.setItem(key, JSON.stringify(vehicles));
+      setView(state.Select);
+    }
   };
 
   return (
@@ -69,7 +83,7 @@ const Container = styled.div`
     .exclamation-icon {
       aspect-ratio: 1/1;
       fill: ${Themes.main};
-      height: 100%;
+      width: 3rem;
     }
 
     p {
@@ -77,6 +91,7 @@ const Container = styled.div`
       font-size: 1.25rem;
       font-weight: bold;
       line-height: 1.75rem;
+      padding-right: 1.5rem;
     }
   }
 `;
