@@ -2,10 +2,12 @@
 import axios from "axios";
 import { createRef, useContext, useEffect, useState } from "react";
 import styled from "styled-components";
+import { idText } from "typescript";
+import { submitVehicle } from "../../core/fetch";
 import { UserContext } from "../../pages/context/UserSlice";
 import { VehicleTypesContext } from "../../pages/context/VehicleTypesSlice";
 import { Themes } from "../../pages/StyleVariables";
-import { FetchedVehicle } from "../../types/Filter";
+import { FetchedVehicle, FormattedVehicle } from "../../types/Filter";
 import Button from "../Button";
 import {
   DuplicatedContext,
@@ -35,15 +37,16 @@ const tracciones = [
 ];
 
 interface Props {
+  setIsLeaving: React.Dispatch<React.SetStateAction<boolean>>;
   vehicles: SavedVehicle[];
 }
 
-const Filter = ({ vehicles }: Props) => {
+const Filter = ({ vehicles, setIsLeaving }: Props) => {
   const filter = useContext(VehicleTypesContext);
   const { setView } = useContext(FilterContext);
   const { setSelected } = useContext(SelectedContext);
   const setDuplicate = useContext(DuplicatedContext);
-  const { user } = useContext(UserContext);
+  const { user, id } = useContext(UserContext);
 
   const [type, setType] = useState<string | null>(null);
   const [brand, setBrand] = useState<string | null>(null);
@@ -79,9 +82,7 @@ const Filter = ({ vehicles }: Props) => {
       (type) => type.label.toLowerCase() === "eléctricos"
     )?.id;
 
-  const submitVehicle = async () => {
-    //  let saved: string | Array<any> | null = localStorage.getItem(key);
-
+  const uploadVehicle = async () => {
     const saved = [...vehicles];
 
     const newVehicle = {
@@ -99,12 +100,12 @@ const Filter = ({ vehicles }: Props) => {
 
       fuel: combustibles.find((el) => el.id === parseInt(fuel ?? ""))?.label,
 
+      traction: tracciones.find((el) => el.id === parseInt(traction ?? ""))
+        ?.label,
+
       transmision: transmisiones.find(
         (el) => el.id === parseInt(transmision ?? "")
       )?.label,
-
-      traction: tracciones.find((el) => el.id === parseInt(traction ?? ""))
-        ?.label,
 
       cilinder: filter.vgl_cilindrajesvehiculos.find(
         (el) => el.id === parseInt(cilinder ?? "")
@@ -124,8 +125,8 @@ const Filter = ({ vehicles }: Props) => {
         cilinder,
         fuel,
         model,
-        transmision,
         traction,
+        transmision,
         type,
         year,
       },
@@ -133,7 +134,7 @@ const Filter = ({ vehicles }: Props) => {
 
     let duplicate = false;
 
-    saved.forEach((vehicle) => {
+    vehicles.forEach((vehicle) => {
       const rotationKeys = Object.values(vehicle.ids);
       const newVehicleKeys = Object.values(newVehicle.ids);
 
@@ -146,24 +147,21 @@ const Filter = ({ vehicles }: Props) => {
       equals ? (duplicate = true) : 0;
     });
 
-    console.log(duplicate);
-
     if (duplicate) {
       setDuplicate(true);
       return;
     }
 
-    console.log(duplicate);
     saved.push(newVehicle);
 
     if (user) {
-      const formattedVehicle = {
+      const formattedVehicle: FormattedVehicle = {
         anno: parseInt(newVehicle.ids.year),
         carroceria: parseInt(newVehicle.ids.body),
         cilindrajemotor: parseInt(newVehicle.ids.cilinder),
         comentario: "Vehiculo agregado desde el filtro de busqueda",
         estado: 1,
-        idusuario: "222222", //here goes the id
+        idusuario: id.toString(), //here goes the id
         marca: parseInt(newVehicle.ids.brand),
         modelo: parseInt(newVehicle.ids.model),
         tipocombustible: parseInt(newVehicle.ids.fuel),
@@ -172,12 +170,14 @@ const Filter = ({ vehicles }: Props) => {
         transmision: parseInt(newVehicle.ids.transmision),
       };
 
-      await axios.post("https://sitbusiness.co/mrp/api/27", formattedVehicle);
+      const response = await submitVehicle(formattedVehicle);
+
+      setSelected(null);
     } else {
       localStorage.setItem(key, JSON.stringify(saved));
+      setSelected(vehicles.length);
     }
     setView(state.Select);
-    setSelected(saved && saved.length - 1);
   };
 
   useEffect(() => {
@@ -414,10 +414,10 @@ const Filter = ({ vehicles }: Props) => {
           </select>
         </div>
         <div className="buttons-container">
-          <Button secondary onclick={() => setView(state.Select)}>
+          <Button secondary onclick={() => setIsLeaving(true)}>
             Cancelar
           </Button>
-          <Button onclick={submitVehicle} disabled={!isValid}>
+          <Button onclick={uploadVehicle} disabled={!isValid}>
             Listo
           </Button>
         </div>

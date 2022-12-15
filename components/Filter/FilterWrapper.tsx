@@ -20,6 +20,7 @@ import ModalWarning from "../ModalWarning";
 import axios from "axios";
 import { FetchedVehicle } from "../../types/Filter";
 import { VehicleTypesContext } from "../../pages/context/VehicleTypesSlice";
+import ConfirmationModal from "./ConfirmationModal";
 
 export enum state {
   Filter,
@@ -90,17 +91,18 @@ const VehicleWrapper = forwardRef<HTMLDivElement, Props>(
     const [editing, setEditing] = useState<null | number>(null);
     const [selected, setSelected] = useState<null | number>(null);
     const [vehicles, setVehicles] = useState<SavedVehicle[] | null>(null);
-    const [isDuplicated, setIsDuplicated] = useState<any>(null);
+    const [isDuplicated, setIsDuplicated] = useState<boolean>(false);
+    const [isLeaving, setIsLeaving] = useState<boolean>(true);
     const filter = useContext(VehicleTypesContext);
 
-    const { user } = useContext(UserContext);
+    const { user, id } = useContext(UserContext);
     const closeWindow = useContext(CloseWindowContext);
 
     const searchVehiclesLocal = async () => {
       if (user) {
         const { data: $vehicles }: { data: FetchedVehicle[] } =
           await axios.post("https://sitbusiness.co/mrp/api/28", {
-            idusuario: 222222,
+            idusuario: id,
           });
 
         const formattedVehicles: SavedVehicle[] = $vehicles.map((v) => ({
@@ -122,12 +124,12 @@ const VehicleWrapper = forwardRef<HTMLDivElement, Props>(
             combustibles.find((el) => el.id === v.tipocombustible)?.label ??
             "indefinido",
 
-          transmision:
-            transmisiones.find((el) => el.id === v.transmision)?.label ??
-            "indefinido",
-
           traction:
             tracciones.find((el) => el.id === v.tipotraccion)?.label ??
+            "indefinido",
+
+          transmision:
+            transmisiones.find((el) => el.id === v.transmision)?.label ??
             "indefinido",
 
           cilinder:
@@ -228,19 +230,20 @@ const VehicleWrapper = forwardRef<HTMLDivElement, Props>(
     }, [editing, view, user]);
 
     return (
-      <DuplicatedContext.Provider value={setIsDuplicated}>
-        <Container ref={ref}>
-          {isDuplicated && <ModalWarning />}
-          <div onClick={closeWindow} className="close-icon-container ">
-            <CloseIcon />
-          </div>
-          <SelectedContext.Provider value={{ selected, setSelected }}>
-            <DeletingContext.Provider value={{ deleting, setDeleting }}>
-              <FilterContext.Provider value={{ view, setView }}>
+      <FilterContext.Provider value={{ view, setView }}>
+        <DuplicatedContext.Provider value={setIsDuplicated}>
+          <Container ref={ref}>
+            {isLeaving && <ConfirmationModal setIsLeaving={setIsLeaving} />}
+            {isDuplicated && <ModalWarning />}
+            <div onClick={closeWindow} className="close-icon-container ">
+              <CloseIcon />
+            </div>
+            <SelectedContext.Provider value={{ selected, setSelected }}>
+              <DeletingContext.Provider value={{ deleting, setDeleting }}>
                 <EditingContext.Provider value={{ editing, setEditing }}>
                   {vehicles &&
                     (view === state.Filter ? (
-                      <Filter vehicles={vehicles} />
+                      <Filter vehicles={vehicles} setIsLeaving={setIsLeaving} />
                     ) : view === state.Select ? (
                       <Select vehicles={vehicles} />
                     ) : view === state.Delete ? (
@@ -248,14 +251,21 @@ const VehicleWrapper = forwardRef<HTMLDivElement, Props>(
                     ) : view === state.Warning ? (
                       <Warning />
                     ) : (
-                      <>{editing !== null && <Edit vehicles={vehicles} />}</>
+                      <>
+                        {editing !== null && (
+                          <Edit
+                            vehicles={vehicles}
+                            setIsLeaving={setIsLeaving}
+                          />
+                        )}
+                      </>
                     ))}
                 </EditingContext.Provider>
-              </FilterContext.Provider>
-            </DeletingContext.Provider>
-          </SelectedContext.Provider>
-        </Container>
-      </DuplicatedContext.Provider>
+              </DeletingContext.Provider>
+            </SelectedContext.Provider>
+          </Container>
+        </DuplicatedContext.Provider>
+      </FilterContext.Provider>
     );
   }
 );

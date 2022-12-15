@@ -1,8 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { createRef, useContext, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
+import { updateVehicleById, VehicleWithId } from "../../core/fetch";
+import { UserContext } from "../../pages/context/UserSlice";
 import { VehicleTypesContext } from "../../pages/context/VehicleTypesSlice";
 import { Themes } from "../../pages/StyleVariables";
+import { FormattedVehicle } from "../../types/Filter";
 import Button from "../Button";
 import {
   DuplicatedContext,
@@ -33,15 +36,17 @@ const tracciones = [
 ];
 
 interface Props {
+  setIsLeaving: React.Dispatch<React.SetStateAction<boolean>>;
   vehicles: SavedVehicle[];
 }
 
-const Edit = ({ vehicles }: Props) => {
+const Edit = ({ vehicles, setIsLeaving }: Props) => {
   const filter = useContext(VehicleTypesContext);
   const { setView } = useContext(FilterContext);
   const { setSelected } = useContext(SelectedContext);
   const { editing: index } = useContext(EditingContext);
   const setDuplicate = useContext(DuplicatedContext);
+  const { user } = useContext(UserContext);
 
   const editingVehicle = vehicles[index];
 
@@ -87,14 +92,9 @@ const Edit = ({ vehicles }: Props) => {
       (type) => type.label.toLowerCase() === "eléctricos"
     )?.id;
 
-  const submitVehicle = () => {
-    let saved: string | SavedVehicle[] | null = localStorage.getItem(key);
+  const submitVehicle = async () => {
+    let saved = [...vehicles];
 
-    if (saved) {
-      saved = JSON.parse(saved) as SavedVehicle[];
-    } else {
-      saved = [];
-    }
     const newVehicle = {
       type: filter.vgl_tiposvehiculos.find(
         (el) => el.id === parseInt(type ?? "")
@@ -110,12 +110,12 @@ const Edit = ({ vehicles }: Props) => {
 
       fuel: combustibles.find((el) => el.id === parseInt(fuel ?? ""))?.label,
 
+      traction: tracciones.find((el) => el.id === parseInt(traction ?? ""))
+        ?.label,
+
       transmision: transmisiones.find(
         (el) => el.id === parseInt(transmision ?? "")
       )?.label,
-
-      traction: tracciones.find((el) => el.id === parseInt(traction ?? ""))
-        ?.label,
 
       cilinder: filter.vgl_cilindrajesvehiculos.find(
         (el) => el.id === parseInt(cilinder ?? "")
@@ -135,8 +135,8 @@ const Edit = ({ vehicles }: Props) => {
         cilinder,
         fuel,
         model,
-        transmision,
         traction,
+        transmision,
         type,
         year,
       },
@@ -148,7 +148,7 @@ const Edit = ({ vehicles }: Props) => {
       const rotationKeys = Object.values(vehicle.ids);
       const newVehicleKeys = Object.values(newVehicle.ids);
 
-      console.log(rotationKeys, newVehicleKeys);
+      console.log(Object.keys(vehicle.ids), Object.keys(newVehicle.ids));
 
       let equals = true;
 
@@ -163,12 +163,31 @@ const Edit = ({ vehicles }: Props) => {
       setDuplicate(true);
       return;
     }
-    (saved as SavedVehicle[]).splice(index, 1, newVehicle);
 
-    localStorage.setItem(key, JSON.stringify(saved));
+    if (user) {
+      const formattedVehicle = {
+        id: editingVehicle.id ?? 0,
+        anno: parseInt(newVehicle.ids.year),
+        carroceria: parseInt(newVehicle.ids.body),
+        cilindrajemotor: parseInt(newVehicle.ids.cilinder),
+        comentario: "Vehiculo agregado desde el filtro de busqueda",
+        estado: 1,
+        marca: parseInt(newVehicle.ids.brand),
+        modelo: parseInt(newVehicle.ids.model),
+        tipocombustible: parseInt(newVehicle.ids.fuel),
+        tipotraccion: parseInt(newVehicle.ids.traction),
+        tipovehiculo: parseInt(newVehicle.ids.type),
+        transmision: parseInt(newVehicle.ids.transmision),
+      };
+      await updateVehicleById(formattedVehicle as VehicleWithId);
+
+      setSelected(editingVehicle.id);
+    } else {
+      (saved as SavedVehicle[]).splice(index, 1, newVehicle);
+      setSelected(index);
+    }
 
     setView(state.Select);
-    setSelected(index);
   };
 
   useEffect(() => {
@@ -235,7 +254,7 @@ const Edit = ({ vehicles }: Props) => {
       <div className="filters-container">
         <div className="selects-rows row-1">
           <select
-            disabled={locked}
+            disabled
             ref={typeInput}
             defaultValue={editingVehicle.ids.type}
             onChange={(e) => setType(e.target.value)}
@@ -419,7 +438,7 @@ const Edit = ({ vehicles }: Props) => {
           </select>
         </div>
         <div className="buttons-container">
-          <Button secondary onclick={() => setView(state.Select)}>
+          <Button secondary onclick={() => setIsLeaving(true)}>
             Cancelar
           </Button>
           <Button onclick={submitVehicle} disabled={!isValid || locked}>

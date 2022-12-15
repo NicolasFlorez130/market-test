@@ -24,7 +24,7 @@ const Select = ({ vehicles }: Props) => {
   };
 
   return (
-    <Container>
+    <Container length={vehicles.length}>
       <div className="select-container">
         <p>Agrega tu vehiculo para filtrar tu busqueda</p>
         <VehicleOverview type={state.None} />
@@ -51,13 +51,26 @@ const Select = ({ vehicles }: Props) => {
 
 export default Select;
 
-const Container = styled.div`
+interface ContainerProps {
+  length: number;
+}
+
+const Container = styled.div<ContainerProps>`
   display: grid;
 
   .select-container {
     .vehicles-container {
-      max-height: 15rem;
-      overflow: scroll;
+      /* max-height: 15rem;
+      overflow-y: scroll;
+      overflow-x: hidden; */
+      /* padding-right: 0.4rem; */
+
+      /* scrollbar-width: none;
+      -ms-overflow-style: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      } */
 
       & > div {
         &:first-child {
@@ -82,10 +95,10 @@ const Container = styled.div`
       background-color: ${Themes.offWhite};
       border-radius: 999px;
       margin-bottom: 1rem;
-      margin-top: 0.75rem;
       padding: 0.5rem 1rem;
       text-align: start;
       width: 100%;
+      ${({ length }) => (length > 0 ? "margin-top: 0.75rem;" : "")}
     }
   }
 

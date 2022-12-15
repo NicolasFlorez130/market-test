@@ -1,6 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
+import { deleteVehicleById } from "../../core/fetch";
 import { UserContext } from "../../pages/context/UserSlice";
 import { Themes } from "../../pages/StyleVariables";
 import Button from "../Button";
@@ -39,15 +40,16 @@ const Deleting = ({ vehicles }: Props) => {
     }
   }, []);
 
-  const accept = () => {
+  const accept = async () => {
     if (user) {
+      await deleteVehicleById(deleting);
     } else {
       const string = localStorage.getItem(key);
       const vehicles = JSON.parse(string ?? "") as SavedVehicle[];
       vehicles.splice(deleting, 1);
       localStorage.setItem(key, JSON.stringify(vehicles));
-      setView(state.Select);
     }
+    setView(state.Select);
   };
 
   return (

@@ -91,3 +91,18 @@ export interface FetchedVehicle {
   fecha?: Date;
   comentario: string;
 }
+
+export interface FormattedVehicle {
+  anno: number;
+  carroceria: number;
+  cilindrajemotor: number;
+  comentario: string;
+  estado: number;
+  idusuario: string;
+  marca: number;
+  modelo: number;
+  tipocombustible: number;
+  tipotraccion: number;
+  tipovehiculo: number;
+  transmision: number;
+}

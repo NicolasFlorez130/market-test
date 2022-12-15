@@ -28,11 +28,12 @@ const VehicleOverview = ({ vehicle, index, type }: Props) => {
 
   let isSelected: boolean;
 
-  if (user) {
+  if (selected === null) {
+    isSelected = type === state.None;
+  } else if (user) {
     isSelected = vehicle?.id === selected;
   } else {
-    isSelected =
-      selected === index || (selected === null && type === state.None);
+    isSelected = selected === index;
   }
 
   const selectVehicle = () => {
