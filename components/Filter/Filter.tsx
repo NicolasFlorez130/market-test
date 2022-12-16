@@ -170,9 +170,11 @@ const Filter = ({ vehicles, setIsLeaving }: Props) => {
         transmision: parseInt(newVehicle.ids.transmision),
       };
 
-      const response = await submitVehicle(formattedVehicle);
+      await submitVehicle(formattedVehicle);
 
-      setSelected(null);
+      const lastElementId = vehicles.at(-1)?.id;
+
+      setSelected(lastElementId ? lastElementId + 1 : -1);
     } else {
       localStorage.setItem(key, JSON.stringify(saved));
       setSelected(vehicles.length);

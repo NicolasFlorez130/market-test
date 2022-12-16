@@ -87,12 +87,14 @@ const tracciones = [
 const VehicleWrapper = forwardRef<HTMLDivElement, Props>(
   ({ setContent, setVehicle }, ref) => {
     const [view, setView] = useState<state>();
+
     const [deleting, setDeleting] = useState<null | number>(null);
     const [editing, setEditing] = useState<null | number>(null);
+    
     const [selected, setSelected] = useState<null | number>(null);
     const [vehicles, setVehicles] = useState<SavedVehicle[] | null>(null);
     const [isDuplicated, setIsDuplicated] = useState<boolean>(false);
-    const [isLeaving, setIsLeaving] = useState<boolean>(true);
+    const [isLeaving, setIsLeaving] = useState<boolean>(false);
     const filter = useContext(VehicleTypesContext);
 
     const { user, id } = useContext(UserContext);

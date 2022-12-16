@@ -148,8 +148,6 @@ const Edit = ({ vehicles, setIsLeaving }: Props) => {
       const rotationKeys = Object.values(vehicle.ids);
       const newVehicleKeys = Object.values(newVehicle.ids);
 
-      console.log(Object.keys(vehicle.ids), Object.keys(newVehicle.ids));
-
       let equals = true;
 
       rotationKeys.forEach((rK, i) => {
@@ -184,6 +182,7 @@ const Edit = ({ vehicles, setIsLeaving }: Props) => {
       setSelected(editingVehicle.id);
     } else {
       (saved as SavedVehicle[]).splice(index, 1, newVehicle);
+      localStorage.setItem(key, JSON.stringify(saved));
       setSelected(index);
     }
 

@@ -60,6 +60,13 @@ const VehicleOverview = ({ vehicle, index, type }: Props) => {
     setSelected(null);
   };
 
+  useEffect(() => {
+    if (selected === -1 && type !== state.None) {
+      selectVehicle();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <Container type={type}>
       <div onClick={selectVehicle} className="overview">
